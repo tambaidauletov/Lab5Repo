@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Sustainability Summary Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: #1e1e1e;
+      color: #f5f5f5;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 800px;
+      height: 180px;
+      padding: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      resize: vertical;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #4a90e2;
+    }
+
+    button {
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #357abd;
+    }
+
+    #result {
+      margin-top: 30px;
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      white-space: pre-wrap;
+    }
+
+    body.dark #result {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Sustainability Summary Generator</h1>
+  <textarea id="prompt" placeholder="Paste your article or report prompt here..."></textarea>
+
+  <div class="toolbar">
+    <button onclick="generateSummary()">Generate Summary</button>
+    <button onclick="downloadSummary()">Download Summary</button>
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  </div>
+
+  <div id="result" hidden>
+    <h2>Summary:</h2>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    async function generateSummary() {
+      const prompt = document.getElementById('prompt').value.trim();
+      const resultDiv = document.getElementById('result');
+      const outputDiv = document.getElementById('output');
+
+      if (!prompt) {
+        alert("Please enter a prompt to summarize.");
+        return;
+      }
+
+      outputDiv.innerText = "Generating summary...";
+      resultDiv.hidden = false;
+
+      try {
+        const response = await fetch('http://localhost:3001/summarize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt: prompt })
+        });
+
+        const data = await response.json();
+        outputDiv.innerText = data.summary || data.error || 'No summary returned.';
+      } catch (err) {
+        outputDiv.innerText = "An error occurred: " + err.message;
+      }
+    }
+
+    function downloadSummary() {
+      const summary = document.getElementById('output').innerText;
+      const blob = new Blob([summary], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'summary.txt';
+      link.click();
+    }
+  </script>
+</body>
+</html>
